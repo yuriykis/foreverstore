@@ -26,7 +26,7 @@ func CASPathTransformFunc(key string) PathKey {
 
 	return PathKey{
 		Pathname: strings.Join(paths, "/"),
-		Original: hashStr,
+		Filename: hashStr,
 	}
 }
 
@@ -35,17 +35,17 @@ type PathTransformFunc func(string) PathKey
 var DefaultPathTransformFunc = func(key string) PathKey {
 	return PathKey{
 		Pathname: "./",
-		Original: key,
+		Filename: key,
 	}
 }
 
 type PathKey struct {
 	Pathname string
-	Original string
+	Filename string
 }
 
-func (pk PathKey) Filename() string {
-	return fmt.Sprintf("%s/%s", pk.Pathname, pk.Original)
+func (pk PathKey) FullPath() string {
+	return fmt.Sprintf("%s/%s", pk.Pathname, pk.Filename)
 }
 
 type StoreOpts struct {
@@ -62,13 +62,30 @@ func NewStore(opts StoreOpts) *Store {
 	}
 }
 
+func (s *Store) Read(key string) ([]byte, error) {
+	r, err := s.readStream(key)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	return io.ReadAll(r)
+}
+
+func (s *Store) readStream(key string) (io.ReadCloser, error) {
+	pathKey := s.PathTransformFunc(key)
+	pathAndFilename := pathKey.FullPath()
+
+	return os.Open(pathAndFilename)
+}
+
 func (s *Store) writeStream(key string, r io.Reader) error {
 	pathKey := s.PathTransformFunc(key)
 	if err := os.MkdirAll(pathKey.Pathname, 0755); err != nil {
 		return err
 	}
 
-	pathAndFilename := pathKey.Filename()
+	pathAndFilename := pathKey.FullPath()
 
 	f, err := os.Create(pathAndFilename)
 	if err != nil {
