@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"io"
+	"os"
 	"testing"
 )
 
@@ -18,14 +20,50 @@ func TestPathTransformFunc(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	opts := StoreOpts{
+		PathTransformFunc: CASPathTransformFunc,
+	}
+	s := NewStore(opts)
+	key := "momsspecialspicture"
+	data := []byte("somejpegbytes")
+
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.Delete(key); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(CASPathTransformFunc(key).FullPath()); !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+}
+
 func TestStore(t *testing.T) {
 	opts := StoreOpts{
 		PathTransformFunc: CASPathTransformFunc,
 	}
 	s := NewStore(opts)
+	key := "momsspecialspicture"
+	data := []byte("somejpegbytes")
 
-	data := bytes.NewReader([]byte("somejpegbytes"))
-	if err := s.writeStream("somespecialpicture", data); err != nil {
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
 		t.Fatal(err)
 	}
+
+	r, err := s.Read(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(b, data) {
+		t.Errorf("Expected %s, got %s", string(data), string(b))
+	}
+
 }

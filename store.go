@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
@@ -62,14 +63,35 @@ func NewStore(opts StoreOpts) *Store {
 	}
 }
 
-func (s *Store) Read(key string) ([]byte, error) {
+func (s *Store) Has(key string) bool {
+	pathKey := s.PathTransformFunc(key)
+	_, err := os.Stat(pathKey.FullPath())
+	return !os.IsNotExist(err)
+}
+
+func (s *Store) Delete(key string) error {
+	pathKey := s.PathTransformFunc(key)
+
+	defer func() {
+		fmt.Printf("Deleted %s\n", pathKey.FullPath())
+	}()
+
+	return os.RemoveAll(pathKey.FullPath())
+}
+
+func (s *Store) Read(key string) (io.Reader, error) {
 	r, err := s.readStream(key)
 	if err != nil {
 		return nil, err
 	}
 	defer r.Close()
 
-	return io.ReadAll(r)
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, r); err != nil {
+		return nil, err
+	}
+
+	return buf, nil
 }
 
 func (s *Store) readStream(key string) (io.ReadCloser, error) {
