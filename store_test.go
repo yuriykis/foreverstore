@@ -66,4 +66,5 @@ func TestStore(t *testing.T) {
 		t.Errorf("Expected %s, got %s", string(data), string(b))
 	}
 
+	s.Delete(key)
 }
