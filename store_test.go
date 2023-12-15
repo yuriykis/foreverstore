@@ -53,18 +53,21 @@ func TestStore(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if ok := s.Has(key); !ok {
+		t.Errorf("Expected %s to exist", key)
+	}
+
 	r, err := s.Read(key)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	b, err := io.ReadAll(r)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if !bytes.Equal(b, data) {
 		t.Errorf("Expected %s, got %s", string(data), string(b))
 	}
-
 	s.Delete(key)
 }
