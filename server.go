@@ -1,6 +1,10 @@
 package main
 
-import "github.com/yuriykis/foreverstore/p2p"
+import (
+	"io"
+
+	"github.com/yuriykis/foreverstore/p2p"
+)
 
 type FileServerOpts struct {
 	StorageRoot       string
@@ -30,4 +34,8 @@ func (fs *FileServer) Start() error {
 		return err
 	}
 	return nil
+}
+
+func (fs *FileServer) Store(key string, r io.Reader) error {
+	return fs.store.Write(key, r)
 }
