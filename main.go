@@ -1,38 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
 
-func OnPeer(p p2p.Peer) error {
-	p.Close()
-	fmt.Println("New peer logic: ", p)
-	return nil
-}
-
 func main() {
-	tcpOpt := p2p.TCPTransportOpts{
+	tcpTransportOpts := p2p.TCPTransportOpts{
 		ListenAddr:    ":3000",
 		HandshakeFunc: p2p.NOPHandshakeFunc,
 		Decoder:       p2p.DefaultDecoder{},
-		OnPeer:        OnPeer,
+		// TODO: OnPeer
 	}
-	tr := p2p.NewTCPTransport(tcpOpt)
+	tcpTrasport := p2p.NewTCPTransport(tcpTransportOpts)
 
-	go func() {
-		for {
-			select {
-			case rpc := <-tr.Consume():
-				log.Println("Received message: ", string(rpc.Payload))
-			}
-		}
-	}()
-
-	if err := tr.ListenAndAccept(); err != nil {
+	fileServerOpts := FileServerOpts{
+		StorageRoot:       "3000_network",
+		PathTransformFunc: CASPathTransformFunc,
+		Transport:         tcpTrasport,
+	}
+	s := NewFileServer(fileServerOpts)
+	if err := s.Start(); err != nil {
 		log.Fatal(err)
 	}
+
 	select {}
 }
