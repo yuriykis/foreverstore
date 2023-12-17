@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	"fmt"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
@@ -15,7 +15,8 @@ type FileServerOpts struct {
 type FileServer struct {
 	FileServerOpts
 
-	store *Store
+	store  *Store
+	quitch chan struct{}
 }
 
 func NewFileServer(opts FileServerOpts) *FileServer {
@@ -26,6 +27,23 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	return &FileServer{
 		FileServerOpts: opts,
 		store:          NewStore(storeOpts),
+		quitch:         make(chan struct{}),
+	}
+}
+
+func (fs *FileServer) Stop() {
+	close(fs.quitch)
+}
+
+func (fs *FileServer) loop() {
+	for {
+		select {
+		case <-fs.quitch:
+			return
+		default:
+			msg := <-fs.Transport.Consume()
+			fmt.Println(msg)
+		}
 	}
 }
 
@@ -34,8 +52,4 @@ func (fs *FileServer) Start() error {
 		return err
 	}
 	return nil
-}
-
-func (fs *FileServer) Store(key string, r io.Reader) error {
-	return fs.store.Write(key, r)
 }
