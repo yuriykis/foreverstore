@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
@@ -37,6 +38,11 @@ func (fs *FileServer) Stop() {
 }
 
 func (fs *FileServer) loop() {
+
+	defer func() {
+		log.Println("FileServer stopped due to user request")
+	}()
+
 	for {
 		select {
 		case <-fs.quitch:
