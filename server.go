@@ -32,6 +32,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 }
 
 func (fs *FileServer) Stop() {
+	fmt.Println("Stopping FileServer")
 	close(fs.quitch)
 }
 
@@ -40,8 +41,7 @@ func (fs *FileServer) loop() {
 		select {
 		case <-fs.quitch:
 			return
-		default:
-			msg := <-fs.Transport.Consume()
+		case msg := <-fs.Transport.Consume():
 			fmt.Println(msg)
 		}
 	}
@@ -51,5 +51,8 @@ func (fs *FileServer) Start() error {
 	if err := fs.Transport.ListenAndAccept(); err != nil {
 		return err
 	}
+
+	fs.loop()
+
 	return nil
 }

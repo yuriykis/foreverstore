@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
@@ -21,9 +22,13 @@ func main() {
 		Transport:         tcpTrasport,
 	}
 	s := NewFileServer(fileServerOpts)
+
+	go func() {
+		time.Sleep(3 * time.Second)
+		s.Stop()
+	}()
+
 	if err := s.Start(); err != nil {
 		log.Fatal(err)
 	}
-
-	select {}
 }
