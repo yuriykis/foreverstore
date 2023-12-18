@@ -41,6 +41,7 @@ func (fs *FileServer) loop() {
 
 	defer func() {
 		log.Println("FileServer stopped due to user request")
+		fs.Transport.Close()
 	}()
 
 	for {
