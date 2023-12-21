@@ -18,9 +18,20 @@ type TCPPeer struct {
 	outbound bool
 }
 
+// Send sends a message to the remote peer, implementing the Peer interface
+func (p *TCPPeer) Send(b []byte) error {
+	_, err := p.conn.Write(b)
+	return err
+}
+
 // Close closes the underlying TCP connection, implementing the Peer interface
 func (p *TCPPeer) Close() error {
 	return p.conn.Close()
+}
+
+// RemoteAddr returns the remote address of the underlying TCP connection, implementing the Peer interface
+func (p *TCPPeer) RemoteAddr() net.Addr {
+	return p.conn.RemoteAddr()
 }
 
 func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer {
@@ -97,7 +108,6 @@ func (t *TCPTransport) startAcceptLoop() {
 			log.Printf("error accepting connection: %s\n", err)
 			return
 		}
-		log.Printf("accepted connection from %s\n", conn.RemoteAddr())
 		go t.handleConn(conn, false)
 	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
@@ -17,8 +18,10 @@ type FileServerOpts struct {
 type FileServer struct {
 	FileServerOpts
 
-	store  *Store
-	quitch chan struct{}
+	peerLock sync.RWMutex
+	peers    map[string]p2p.Peer
+	store    *Store
+	quitch   chan struct{}
 }
 
 func NewFileServer(opts FileServerOpts) *FileServer {
@@ -28,6 +31,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 	return &FileServer{
 		FileServerOpts: opts,
+		peers:          make(map[string]p2p.Peer),
 		store:          NewStore(storeOpts),
 		quitch:         make(chan struct{}),
 	}
@@ -36,6 +40,17 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 func (fs *FileServer) Stop() {
 	fmt.Println("Stopping FileServer")
 	close(fs.quitch)
+}
+
+func (fs *FileServer) OnPeer(p p2p.Peer) error {
+	fs.peerLock.Lock()
+	defer fs.peerLock.Unlock()
+
+	fs.peers[p.RemoteAddr().String()] = p
+
+	log.Printf("New peer connected: %s\n", p.RemoteAddr())
+
+	return nil
 }
 
 func (fs *FileServer) loop() {
