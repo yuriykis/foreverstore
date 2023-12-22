@@ -39,11 +39,6 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 }
 
-type Payload struct {
-	Key  string
-	Data []byte
-}
-
 func (fs *FileServer) broadcats(p Payload) error {
 	peers := []io.Writer{}
 	for _, peer := range peers {
@@ -54,10 +49,18 @@ func (fs *FileServer) broadcats(p Payload) error {
 	return gob.NewEncoder(mw).Encode(p)
 }
 
+type Payload struct {
+	Key  string
+	Data []byte
+}
+
 func (fs *FileServer) StoreData(key string, r io.Reader) error {
-	if err := fs.store.writeStream(key, r); err != nil {
+	if err := fs.store.Write(key, r); err != nil {
 		return err
 	}
+
+	// the reader is consumed by the store, so we need to re-create it
+
 	return nil
 }
 
