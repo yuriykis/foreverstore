@@ -45,12 +45,13 @@ type Payload struct {
 }
 
 func (fs *FileServer) broadcats(p Payload) error {
-	for _, peer := range fs.peers {
-		if err := gob.NewEncoder(peer).Encode(p); err != nil {
-			return err
-		}
+	peers := []io.Writer{}
+	for _, peer := range peers {
+		peers = append(peers, peer)
 	}
-	return nil
+	mw := io.MultiWriter(peers...)
+
+	return gob.NewEncoder(mw).Encode(p)
 }
 
 func (fs *FileServer) StoreData(key string, r io.Reader) error {
