@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
+	"io"
 	"log"
 	"sync"
 
@@ -35,6 +37,27 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 		store:          NewStore(storeOpts),
 		quitch:         make(chan struct{}),
 	}
+}
+
+type Payload struct {
+	Key  string
+	Data []byte
+}
+
+func (fs *FileServer) broadcats(p Payload) error {
+	for _, peer := range fs.peers {
+		if err := gob.NewEncoder(peer).Encode(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (fs *FileServer) StoreData(key string, r io.Reader) error {
+	if err := fs.store.writeStream(key, r); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (fs *FileServer) Stop() {
