@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -39,7 +40,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 }
 
-func (fs *FileServer) broadcats(p Payload) error {
+func (fs *FileServer) broadcats(p *Payload) error {
 	peers := []io.Writer{}
 	for _, peer := range peers {
 		peers = append(peers, peer)
@@ -59,9 +60,19 @@ func (fs *FileServer) StoreData(key string, r io.Reader) error {
 		return err
 	}
 
-	// the reader is consumed by the store, so we need to re-create it
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, r); err != nil {
+		return err
+	}
 
-	return nil
+	p := &Payload{
+		Key:  key,
+		Data: buf.Bytes(),
+	}
+
+	fmt.Println(buf.Bytes())
+
+	return fs.broadcats(p)
 }
 
 func (fs *FileServer) Stop() {
