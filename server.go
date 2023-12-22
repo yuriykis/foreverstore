@@ -40,7 +40,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 }
 
-func (fs *FileServer) broadcats(p *Payload) error {
+func (fs *FileServer) broadcast(p *Payload) error {
 	peers := []io.Writer{}
 	for _, peer := range peers {
 		peers = append(peers, peer)
@@ -72,7 +72,7 @@ func (fs *FileServer) StoreData(key string, r io.Reader) error {
 
 	fmt.Println(buf.Bytes())
 
-	return fs.broadcats(p)
+	return fs.broadcast(p)
 }
 
 func (fs *FileServer) Stop() {
