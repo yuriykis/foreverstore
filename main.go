@@ -34,6 +34,7 @@ func main() {
 		log.Fatal(s1.Start())
 	}()
 
+	time.Sleep(1 * time.Second)
 	go s2.Start()
 	time.Sleep(1 * time.Second)
 

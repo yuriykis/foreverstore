@@ -103,7 +103,11 @@ func (fs *FileServer) loop() {
 		case <-fs.quitch:
 			return
 		case msg := <-fs.Transport.Consume():
-			fmt.Println(msg)
+			var p Payload
+			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&p); err != nil {
+				log.Printf("error decoding message: %s\n", err)
+			}
+			log.Printf("Received message: %s\n", p)
 		}
 	}
 }
