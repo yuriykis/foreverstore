@@ -112,6 +112,7 @@ func (fs *FileServer) loop() {
 	}
 }
 
+// bootstrapNetwork tries to connect to all bootstrap nodes
 func (fs *FileServer) bootstrapNetwork() error {
 	for _, addr := range fs.BootstrapNodes {
 		if len(addr) == 0 {
