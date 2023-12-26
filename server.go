@@ -70,8 +70,6 @@ func (fs *FileServer) StoreData(key string, r io.Reader) error {
 		Data: buf.Bytes(),
 	}
 
-	fmt.Println(buf.Bytes())
-
 	return fs.broadcast(p)
 }
 
@@ -100,14 +98,14 @@ func (fs *FileServer) loop() {
 
 	for {
 		select {
-		case <-fs.quitch:
-			return
 		case msg := <-fs.Transport.Consume():
 			var p Payload
 			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&p); err != nil {
 				log.Printf("error decoding message: %s\n", err)
 			}
 			log.Printf("Received message: %s\n", p)
+		case <-fs.quitch:
+			return
 		}
 	}
 }
