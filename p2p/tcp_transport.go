@@ -92,12 +92,14 @@ func (t *TCPTransport) startAcceptLoop() {
 	for {
 		conn, err := t.listener.Accept()
 		if errors.Is(err, net.ErrClosed) {
+			log.Println("TCP transport stopped")
 			return
 		}
 		if err != nil {
 			log.Printf("error accepting connection: %s\n", err)
 			return
 		}
+		log.Printf("accepted connection from %s\n", conn.RemoteAddr())
 		go t.handleConn(conn, false)
 	}
 }

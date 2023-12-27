@@ -42,7 +42,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 
 func (fs *FileServer) broadcast(p *Payload) error {
 	peers := []io.Writer{}
-	for _, peer := range peers {
+	for _, peer := range fs.peers {
 		peers = append(peers, peer)
 	}
 	mw := io.MultiWriter(peers...)
