@@ -55,6 +55,7 @@ type Payload struct {
 	Data []byte
 }
 
+// StoreData stores data in the store and broadcasts it to all peers
 func (fs *FileServer) StoreData(key string, r io.Reader) error {
 	if err := fs.store.Write(key, r); err != nil {
 		return err
