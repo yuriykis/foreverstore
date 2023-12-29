@@ -50,6 +50,7 @@ func (fs *FileServer) broadcast(p *Payload) error {
 	return gob.NewEncoder(mw).Encode(p)
 }
 
+// Payload is the message that is sent to all peers
 type Payload struct {
 	Key  string
 	Data []byte
