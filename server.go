@@ -40,6 +40,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 }
 
+// broadcast sends a message to all peers
 func (fs *FileServer) broadcast(p *Payload) error {
 	peers := []io.Writer{}
 	for _, peer := range fs.peers {
