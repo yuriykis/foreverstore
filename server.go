@@ -59,12 +59,11 @@ type Payload struct {
 
 // StoreData stores data in the store and broadcasts it to all peers
 func (fs *FileServer) StoreData(key string, r io.Reader) error {
-	if err := fs.store.Write(key, r); err != nil {
-		return err
-	}
 
 	buf := new(bytes.Buffer)
-	if _, err := io.Copy(buf, r); err != nil {
+	tee := io.TeeReader(r, buf)
+
+	if err := fs.store.Write(key, tee); err != nil {
 		return err
 	}
 
@@ -106,7 +105,7 @@ func (fs *FileServer) loop() {
 			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&p); err != nil {
 				log.Printf("error decoding message: %s\n", err)
 			}
-			log.Printf("Received message: %s\n", p)
+			log.Printf("Received message: %+v\n", string(p.Data))
 		case <-fs.quitch:
 			return
 		}
