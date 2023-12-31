@@ -41,18 +41,23 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 }
 
 // broadcast sends a message to all peers
-func (fs *FileServer) broadcast(p *Payload) error {
+func (fs *FileServer) broadcast(msg *Message) error {
 	peers := []io.Writer{}
 	for _, peer := range fs.peers {
 		peers = append(peers, peer)
 	}
 	mw := io.MultiWriter(peers...)
 
-	return gob.NewEncoder(mw).Encode(p)
+	return gob.NewEncoder(mw).Encode(msg)
+}
+
+type Message struct {
+	From    string
+	Payload any
 }
 
 // Payload is the message that is sent to all peers
-type Payload struct {
+type DataMessage struct {
 	Key  string
 	Data []byte
 }
@@ -67,12 +72,15 @@ func (fs *FileServer) StoreData(key string, r io.Reader) error {
 		return err
 	}
 
-	p := &Payload{
+	p := &DataMessage{
 		Key:  key,
 		Data: buf.Bytes(),
 	}
 
-	return fs.broadcast(p)
+	return fs.broadcast(&Message{
+		From:    "todo",
+		Payload: p,
+	})
 }
 
 func (fs *FileServer) Stop() {
@@ -101,15 +109,26 @@ func (fs *FileServer) loop() {
 	for {
 		select {
 		case msg := <-fs.Transport.Consume():
-			var p Payload
-			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&p); err != nil {
+			var m Message
+			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&m); err != nil {
 				log.Printf("error decoding message: %s\n", err)
 			}
-			log.Printf("Received message: %+v\n", string(p.Data))
+			if err := fs.handleMessage(m); err != nil {
+				log.Printf("error handling message: %s\n", err)
+			}
 		case <-fs.quitch:
 			return
 		}
 	}
+}
+
+func (fs *FileServer) handleMessage(msg Message) error {
+	switch v := msg.Payload.(type) {
+	case *DataMessage:
+		log.Printf("Received data message: %s\n", v.Key)
+		// fs.store.Write(v.Key, bytes.NewReader(v.Data))
+	}
+	return nil
 }
 
 // bootstrapNetwork tries to connect to all bootstrap nodes
