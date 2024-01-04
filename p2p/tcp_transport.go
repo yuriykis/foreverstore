@@ -142,7 +142,7 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 			fmt.Println("TCP error decoding message: ", err)
 			continue
 		}
-		rpc.From = conn.RemoteAddr() // probably not ok
+		rpc.From = conn.RemoteAddr().String()
 		t.rpcCh <- rpc
 	}
 }
