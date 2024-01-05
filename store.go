@@ -125,10 +125,12 @@ func (s *Store) readStream(key string) (io.ReadCloser, error) {
 	return os.Open(fullPathWithRoot)
 }
 
+// Write writes the contents of r to a file in the store
 func (s *Store) Write(key string, r io.Reader) error {
 	return s.writeStream(key, r)
 }
 
+// writeStream writes the contents of r to a file in the store
 func (s *Store) writeStream(key string, r io.Reader) error {
 	pathKey := s.PathTransformFunc(key)
 	pathKeyWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.Pathname)
