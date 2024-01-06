@@ -146,6 +146,7 @@ func (fs *FileServer) loop() {
 
 			log.Printf("Received message: %s\n", string(b))
 
+			peer.(*p2p.TCPPeer).Wg.Done()
 			// if err := fs.handleMessage(msg); err != nil {
 			// 	log.Printf("error handling message: %s\n", err)
 			// }
