@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/yuriykis/foreverstore/p2p"
 )
@@ -72,6 +73,8 @@ func (fs *FileServer) StoreData(key string, r io.Reader) error {
 		}
 	}
 
+	time.Sleep(3 * time.Second)
+
 	payload := []byte("THIS LARGE FILE IS STORED IN THE FOREVERSTORE")
 	for _, peer := range fs.peers {
 		if err := peer.Send(payload); err != nil {
@@ -129,15 +132,20 @@ func (fs *FileServer) loop() {
 				log.Printf("error decoding message: %s\n", err)
 			}
 
+			log.Printf("Received message: %s\n", string(msg.Payload.([]byte)))
 			peer, ok := fs.peers[rpc.From]
 			if !ok {
 				log.Printf("received message from unknown peer %s\n", rpc.From)
 				continue
 			}
 
-			log.Printf("Peer: %d", peer)
+			b := make([]byte, 1000)
+			if _, err := peer.Read(b); err != nil {
+				panic(err)
+			}
 
-			log.Printf("Received message: %s\n", string(msg.Payload.([]byte)))
+			log.Printf("Received message: %s\n", string(b))
+
 			// if err := fs.handleMessage(msg); err != nil {
 			// 	log.Printf("error handling message: %s\n", err)
 			// }

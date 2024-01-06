@@ -16,6 +16,8 @@ type TCPPeer struct {
 	// if we dial a connection => outbound = true
 	// if we accept a connection => outbound = false
 	outbound bool
+
+	Wg *sync.WaitGroup
 }
 
 // Send sends a message to the remote peer, implementing the Peer interface
@@ -28,6 +30,7 @@ func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer {
 	return &TCPPeer{
 		Conn:     conn,
 		outbound: outbound,
+		Wg:       &sync.WaitGroup{},
 	}
 }
 
@@ -143,6 +146,10 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 			continue
 		}
 		rpc.From = conn.RemoteAddr().String()
+		peer.Wg.Add(1)
+		log.Printf("waiting till stream is read")
 		t.rpcCh <- rpc
+		peer.Wg.Wait()
+		log.Printf("stream is read")
 	}
 }
