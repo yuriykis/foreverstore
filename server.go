@@ -117,6 +117,7 @@ func (fs *FileServer) OnPeer(p p2p.Peer) error {
 	return nil
 }
 
+// loop handles incoming messages
 func (fs *FileServer) loop() {
 
 	defer func() {
