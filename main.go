@@ -29,9 +29,15 @@ func makeServer(listenAddr string, nodes ...string) *FileServer {
 func main() {
 	s1 := makeServer(":3000", "")
 	s2 := makeServer(":4000", "localhost:3000")
+	s3 := makeServer(":5000", "localhost:3000")
 
 	go func() {
 		log.Fatal(s1.Start())
+	}()
+
+	time.Sleep(2 * time.Second)
+	go func() {
+		log.Fatal(s3.Start())
 	}()
 
 	time.Sleep(2 * time.Second)
