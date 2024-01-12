@@ -61,7 +61,8 @@ func (pk PathKey) FirstDir() string {
 
 type StoreOpts struct {
 	// Root is the root directory of the store containing all the files
-	Root              string
+	Root string
+	// PathTransformFunc is a function that transforms a key into a PathKey
 	PathTransformFunc PathTransformFunc
 }
 
