@@ -33,6 +33,7 @@ func CASPathTransformFunc(key string) PathKey {
 	}
 }
 
+// PathTransformFunc is a function that transforms a key into a PathKey
 type PathTransformFunc func(string) PathKey
 
 var DefaultPathTransformFunc = func(key string) PathKey {
